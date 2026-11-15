@@ -49,6 +49,8 @@ base64 < /path/to/distribution.p12 | tr -d '\n' | pbcopy
 
 描述文件必须属于该 Team，且 application-identifier 为 `TEAMID.com.zzxap.chinesechess`，并包含与证书匹配的分发授权。
 只提供 `.cer` 不够，需要包含私钥的 `.p12`。
+CI 会补齐 Apple WWDR G3 中间证书，并在归档前检查可用的证书/私钥与描述文件内的证书指纹是否一致，匹配后使用该指纹签名。
+若提示没有有效签名身份，请从“钥匙串访问 → 我的证书”重新导出分发证书及其私钥为 `.p12`；若提示描述文件不匹配，请选择同一分发证书重新生成描述文件，并更新对应 Secret。
 配置齐全后导出 App Store IPA；未配置时生成 `ios-unsigned.ipa` 和 `.xcarchive.zip`，未签名 IPA 不能直接安装。
 这里不需要 Apple ID 密码，也没有设置自动上传 App Store Connect。
 

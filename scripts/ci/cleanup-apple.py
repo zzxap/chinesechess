@@ -12,5 +12,5 @@ if record.exists():
     expected = Path.home() / 'Library/MobileDevice/Provisioning Profiles'
     if path.parent == expected: path.unlink(missing_ok=True)
 for name in ['chinesechess-profile-path.txt', 'chinesechess-signing.p12',
-             'chinesechess-profile.mobileprovision', 'ExportOptions.plist']:
+             'chinesechess-profile.mobileprovision', 'chinesechess-wwdr-g3.cer', 'ExportOptions.plist']:
     (temp / name).unlink(missing_ok=True)

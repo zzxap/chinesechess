@@ -44,7 +44,7 @@ if [[ "$TARGET" == apple || "$TARGET" == all ]]; then
 fi
 
 if [[ "$TARGET" == android || "$TARGET" == all ]]; then
-  NDK="${ANDROID_NDK_HOME:-${ANDROID_HOME:-$HOME/Library/Android/sdk}/ndk/28.2.13676358}"
+  NDK="${ANDROID_NDK_HOME:-${ANDROID_HOME:-$HOME/Library/Android/sdk}/ndk/27.1.12297006}"
   ndk_hosts=("$NDK/toolchains/llvm/prebuilt/"*)
   if [[ ${#ndk_hosts[@]} != 1 ]]; then echo "Expected one NDK host toolchain" >&2; exit 1; fi
   for abi in arm64-v8a x86_64; do

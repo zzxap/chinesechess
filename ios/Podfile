@@ -17,6 +17,7 @@ if linkage != nil
 end
 
 target 'ChineseChess' do
+  pod 'ChineseChessAI', :path => '../native/ai-engine'
   config = use_native_modules!
 
   use_react_native!(

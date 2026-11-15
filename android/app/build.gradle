@@ -73,6 +73,10 @@ def enableProguardInReleaseBuilds = false
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
 android {
+    externalNativeBuild {
+        cmake { path "src/main/jni/CMakeLists.txt" }
+    }
+    sourceSets.main.assets.srcDir("$buildDir/generated/aiAssets")
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
@@ -114,6 +118,18 @@ android {
         }
     }
 }
+
+def prepareAIAssets = tasks.register("prepareAIAssets", Sync) {
+    from("../../AI/lib-dist/model.nnue")
+    from("../../licenses") { into("licenses") }
+    into("$buildDir/generated/aiAssets")
+    doFirst {
+        if (!file("../../AI/lib-dist/model.nnue").isFile()) {
+            throw new GradleException("Build bundled AI first: bash scripts/build-ai-engine-libs.sh android")
+        }
+    }
+}
+tasks.named("preBuild").configure { dependsOn(prepareAIAssets) }
 
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin

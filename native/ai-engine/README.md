@@ -12,7 +12,7 @@ bash scripts/build-ai-engine-libs.sh all
 # 也可分别使用 apple 或 android
 ```
 
-需要 Xcode、CMake、Ninja、Python 3；Android 默认使用 NDK 28.2.13676358，可通过 `ANDROID_NDK_HOME` 指定。
+需要 Xcode、CMake、Ninja、Python 3；Android 默认使用与 RN 工程一致的 NDK 27.1.12297006，可通过 `ANDROID_NDK_HOME` 指定。
 源码位置可用 `AI_ENGINE_SOURCE` 指定。中间文件与产物均保存在项目目录的 `AI/build`、`AI/lib-dist` 中。
 
 - Apple：`AIEngine.xcframework`，包括 iOS arm64、模拟器 arm64/x86_64、macOS arm64/x86_64 静态库。
@@ -34,6 +34,8 @@ bash scripts/build-ai-engine-libs.sh all
 
 ## 集成与发行
 
-Web 开发模式通过本机常驻进程调用 AI库；RN 原生桥接尚未接入，原生模式目前连接本地开发服务。
+Web 开发模式通过本机常驻进程调用 AI库。原生应用通过 Android JNI、Apple 原生模块、Windows 原生模块在后台线程调用 C 接口。
+Apple 静态库与模型资源由本地 Pod 接入；Android 动态库由 CMake 导入，模型随 assets 打包；Windows 安装包包含 DLL 和模型。
+每个平台均缓存进程内引擎，串行分析当前 FEN，默认思考 1000 ms。JS 校验返回局面和合法着法，丢弃过期结果。
 库包含模型、许可证、作者与来源声明、对应源码、封装及构建脚本；发行完整 App 时仍需提供整个覆盖作品的对应源码。
 发行流程与签名 Secrets 见 [自动打包指南](../../docs/RELEASING.md)。

@@ -1,7 +1,7 @@
 import {applyMove, legalMoves, opposite} from './engine';
 import type {Analysis, Board, Move, Side} from './engine';
 import {fromUci, toFen, toUci} from './fen';
-import {aiEndpoint} from './aiEndpoint';
+import {requestAnalysis} from './aiTransport';
 
 const same=(a: Move,b: Move) => a.from===b.from && a.to===b.to;
 const empty=(): Analysis => ({move:null,score:0,depth:0,nodes:0,line:[],source:'ai',engineName:'AI库'});
@@ -15,16 +15,10 @@ export async function suggest(board: Board,side: Side,cancelled: () => boolean,o
   const timeout=setTimeout(() => controller.abort(),20000);
   const cancellation=setInterval(() => { if (cancelled()) { controller.abort(); } },80);
   try {
-    const response=await fetch(aiEndpoint,{
-      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fen}),signal:controller.signal,
-    });
-    const text=await response.text();
-    let data;
-    try { data=JSON.parse(text); }
-    catch { throw new Error('AI库返回格式错误，请检查本地服务是否已启动'); }
-    if (!data || typeof data!=='object') { throw new Error('AI库返回了无效结果'); }
-    if (!response.ok) { throw new Error(typeof data.error==='string' ? data.error : `AI库请求失败（${response.status}）`); }
+    const payload=await requestAnalysis(fen,cancelled,controller.signal);
     if (cancelled()) { return empty(); }
+    if (!payload || typeof payload!=='object') { throw new Error('AI库返回了无效结果'); }
+    const data=payload as Record<string, unknown>;
     if (data.fen!==fen) { throw new Error('AI库结果与当前局面不一致，请重新分析'); }
     const move=typeof data.move==='string' ? fromUci(data.move) : null;
     if (!move || !legal.some(m => same(m,move))) { throw new Error('AI库未返回当前局面的合法着法'); }
@@ -36,7 +30,7 @@ export async function suggest(board: Board,side: Side,cancelled: () => boolean,o
       line.push(next); position=applyMove(position,next); turn=opposite(turn);
     }
     const scoreKnown=finite(data.score);
-    const result: Analysis={move,score:scoreKnown ? data.score : 0,scoreKnown,
+    const result: Analysis={move,score:finite(data.score) ? data.score : 0,scoreKnown,
       depth:finite(data.depth) ? data.depth : 0,depthKnown:finite(data.depth) && data.depth>0,
       nodes:finite(data.nodes) ? data.nodes : 0,mate:finite(data.mate) ? data.mate : undefined,
       line:line.length && same(line[0],move) ? line : [move],source:'ai',engineName:'AI库',

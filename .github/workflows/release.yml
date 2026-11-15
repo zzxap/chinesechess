@@ -46,6 +46,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: node scripts/ci/version.mjs
+      - name: Build bundled Android AI libraries
+        run: |
+          sdkmanager 'ndk;27.1.12297006' 'cmake;3.22.1'
+          bash scripts/build-ai-engine-libs.sh android
       - name: Build APK and AAB
         run: bash scripts/ci/build-android.sh
         env:
@@ -56,10 +60,8 @@ jobs:
       - name: Remove signing file
         if: always()
         run: rm -f "$RUNNER_TEMP/chinesechess-upload.keystore"
-      - name: Build Android native libraries
+      - name: Package Android AI SDK
         run: |
-          sdkmanager 'ndk;28.2.13676358' 'cmake;3.22.1'
-          bash scripts/build-ai-engine-libs.sh android
           cd AI
           zip -r "$GITHUB_WORKSPACE/release-artifacts/ai-engine-$APP_VERSION-android.zip" lib-dist
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
@@ -69,6 +71,7 @@ jobs:
           if-no-files-found: error
 
   apple:
+    needs: apple-libraries
     strategy:
       fail-fast: false
       matrix:
@@ -95,6 +98,15 @@ jobs:
           bundler-cache: true
       - run: pnpm install --frozen-lockfile
       - run: node scripts/ci/version.mjs
+      - name: Download built Apple AI libraries
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: apple-libraries
+          path: ${{ runner.temp }}/apple-ai-libraries
+      - name: Unpack bundled Apple AI
+        run: |
+          mkdir -p AI
+          ditto -x -k "$RUNNER_TEMP/apple-ai-libraries/ai-engine-$APP_VERSION-apple.zip" AI
       - name: Install Pods
         working-directory: ${{ matrix.platform }}
         run: bundle exec pod install
@@ -144,14 +156,15 @@ jobs:
       - uses: microsoft/setup-msbuild@6fb02220983dee41ce7ae257b6f4d8f9bf5ed4ce # v2
       - run: pnpm install --frozen-lockfile
       - run: node scripts/ci/version.mjs
-      - name: Build Windows app
-        shell: pwsh
-        run: ./scripts/ci/build-windows.ps1
       - name: Build AI library DLL, import library and static library
         shell: pwsh
         run: |
           ./scripts/build-ai-engine-libs.ps1
+          New-Item -ItemType Directory -Force release-artifacts | Out-Null
           Compress-Archive -Path AI/lib-dist/* -DestinationPath "release-artifacts/ai-engine-$env:APP_VERSION-windows-x64.zip"
+      - name: Build Windows app and installer
+        shell: pwsh
+        run: ./scripts/ci/build-windows.ps1
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: windows
@@ -205,8 +218,9 @@ jobs:
             'Android: signed when upload-key Secrets are configured; otherwise unsigned.' \
             'iOS: App Store signed IPA when certificate/profile Secrets are configured; otherwise unsigned IPA.' \
             'macOS: universal ZIP and DMG; Developer ID signed and Apple notarized when signing is configured; otherwise ad-hoc.' \
-            'Windows: unsigned x64 portable app and AI library DLL/import/static libraries.' \
-            'No store submission is performed. Native AI library RN bridging is not yet integrated.' \
+            'Windows: unsigned x64 installer EXE and portable ZIP; both include the AI runtime and model.' \
+            'Native applications include in-process AI libraries and model data; separate AI SDK ZIPs are for developers.' \
+            'No store submission is performed.' \
             'App source is available at this release tag; engine packages include corresponding source and license notices.' > RELEASE_NOTES.md
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" ./* --clobber

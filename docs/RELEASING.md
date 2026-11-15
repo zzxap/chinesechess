@@ -71,7 +71,7 @@ CI 会补齐 Apple WWDR G3 中间证书，并在归档前检查可用的证书/�
 Actions 提交签名应用到 Apple 公证，等待 `Accepted`，再装订并验证应用票据；DMG 也会签名、公证并装订。通过后产物名称包含 `notarized`。
 缺少认证信息或公证被拒绝时直接失败，不会把只有签名的包标记为已公证。该 DMG 路径用于独立分发，不是 Mac App Store 上传包。
 
-Windows 当前生成未签名 x64 portable ZIP。Windows 商店身份、代码签名与 MSIX 发布尚未配置。
+Windows 生成未签名 x64 安装 EXE 和 portable ZIP，两者均包含 AI 运行库与模型。Windows 商店身份、代码签名与 MSIX 发布尚未配置。
 
 ## 临时文件与上传范围
 
@@ -88,10 +88,10 @@ Windows 当前生成未签名 x64 portable ZIP。Windows 商店身份、代码�
 | Android | APK + AAB，arm64 / x86_64 | 两个架构 `.so`，附 C++ runtime、模型及对应源码 |
 | iOS | IPA + xcarchive ZIP | XCFramework 中的 iOS arm64 与模拟器库 |
 | macOS | universal app ZIP + DMG | XCFramework 中的 macOS arm64 / x86_64 库 |
-| Windows | x64 portable ZIP | `ai_engine.dll`、`ai_engine.lib`（DLL 导入库）、`ai_engine-static.lib`（静态库） |
+| Windows | x64 安装 EXE + portable ZIP | `ai_engine.dll`、`ai_engine.lib`（DLL 导入库）、`ai_engine-static.lib`（静态库） |
 
-AI库的 C ABI 封装与库包已准备；RN 原生桥接尚未接入，当前原生 App 仍访问配置的本机后端。
-因此打包成功不代表本地引擎在手机里已可用。
+原生 App 在进程内调用随包携带的 AI库和模型，用户只需安装对应平台的应用包。AAB 用于 Google Play 上传；SDK ZIP 仅供开发者复用，无需额外安装。
+Windows 首先构建 DLL，Apple 首先构建并下载 XCFramework，Android 首先构建动态库；全部在应用打包前完成。
 库包附许可证与对应引擎源码；整个应用源码由发行 tag 提供。
 App Store 分发与 GPL 兼容性仍需确认，不能把“已经开源/签名成功”视为已具备上架条件。
 

@@ -6,7 +6,7 @@ React Native + TypeScript 中国象棋对弈应用，支持 Android、iOS、Wind
 ## 对弈功能
 
 - 木质棋盘、立体棋子，支持红黑方向互换。
-- 头部提供量居-家具定制、进销存、客服入口，在应用内网页窗口打开；关闭后返回当前棋局。
+- 头部提供量居-家具定制、进销存、客服入口；移动端和 macOS 在应用内打开，Windows 使用系统浏览器。
 - 双人对弈、人机对弈、合法落点提示、悔棋与重新开局。
 - 每次落子后由 AI库分析当前局面，提示下一方建议走法。
 - AI库以当前 FEN 为输入，单次默认思考 1000 ms；界面会丢弃过期结果，并校验返回着法是否合法。
@@ -28,13 +28,18 @@ pnpm dev
 原生项目开发：
 
 ```sh
-pnpm backend
+bash scripts/build-ai-engine-libs.sh android
 pnpm android
-# 或 pnpm ios / pnpm macos / pnpm windows
+# Apple 先构建库，再安装 Pods
+bash scripts/build-ai-engine-libs.sh apple
+(cd ios && bundle exec pod install)
+pnpm ios
+# macOS 改为在 macos 目录安装 Pods，然后 pnpm macos
+# Windows 先 powershell -File scripts/build-ai-engine-libs.ps1，再 pnpm windows
 ```
 
-原生端当前连接 `127.0.0.1:16002` 的开发服务；模拟器/真机需具备可达的本地服务或完成原生桥接后使用。
-原生库的 C 接口与多平台构建已提供，RN 原生桥接尚未接入。
+Android、iOS、macOS 和 Windows 通过原生接口在进程内调用 AI库，模型随应用打包，离线运行无需另装库包或启动后端。
+Android 首次分析会把内置模型校验并复制到应用私有目录。浏览器开发版本仍通过本机服务计算。
 
 iOS、Android、macOS 网页窗口使用原生 WebView；Windows 点击头部链接使用系统浏览器打开。新增依赖后需在 iOS / macOS 工程目录重新执行 `bundle exec pod install`，并重新编译原生应用。
 浏览器版本使用内嵌网页，提供“在浏览器打开”入口。
@@ -54,6 +59,7 @@ Windows 在 Visual Studio 2022 环境运行 `scripts/build-ai-engine-libs.ps1`�
 ## 发布与签名
 
 推送 `v*` 版本 tag，GitHub Actions 自动构建四个平台应用及库包，并上传 GitHub Release。
+用户只需下载对应平台的应用安装包；独立 AI库 ZIP 是供开发者复用的 SDK。Windows 提供包含运行文件和模型的安装 EXE 及便携 ZIP。
 证书、私钥和密码通过 GitHub Actions Secrets 配置。
 具体步骤见 [自动打包指南](docs/RELEASING.md)。
 

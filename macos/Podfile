@@ -11,6 +11,7 @@ prepare_react_native_project!
 
 target 'ChineseChess-macOS' do
   platform :macos, '14.0'
+  pod 'ChineseChessAI', :path => '../native/ai-engine'
   use_native_modules!
 
   use_react_native!(

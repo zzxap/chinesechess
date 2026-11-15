@@ -1,4 +1,15 @@
 $ErrorActionPreference = 'Stop'
+$ProjectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+Set-Location $ProjectRoot
+$AIRuntime = @(
+    (Join-Path $ProjectRoot 'AI/lib-dist/windows/x64/ai_engine.dll'),
+    (Join-Path $ProjectRoot 'AI/lib-dist/model.nnue')
+)
+foreach ($Source in $AIRuntime) {
+    if (-not (Test-Path -LiteralPath $Source -PathType Leaf)) {
+        throw "AI build output missing: $Source. Run scripts/build-ai-engine-libs.ps1 first."
+    }
+}
 $ManifestPath = Join-Path $PWD 'windows/ChineseChess.Package/Package.appxmanifest'
 [xml]$Manifest = Get-Content $ManifestPath -Raw
 $Manifest.Package.Identity.Version = "$env:APP_VERSION.$env:APP_BUILD_NUMBER"
@@ -10,10 +21,18 @@ $Exe = Get-ChildItem windows -Filter ChineseChess.exe -Recurse |
     Select-Object -First 1
 if (-not $Exe) { throw 'Windows release executable not found' }
 $Stage = Join-Path $env:RUNNER_TEMP 'chinesechess-windows'
+if (Test-Path -LiteralPath $Stage) { Remove-Item -LiteralPath $Stage -Recurse -Force }
 New-Item -ItemType Directory -Force $Stage | Out-Null
 Copy-Item (Join-Path $Exe.DirectoryName '*') $Stage -Recurse -Force
+# Package from the library build's canonical outputs, independently of the
+# app project's OutDir/TargetDir and MSBuild's post-build copy target.
+foreach ($Source in $AIRuntime) {
+    Copy-Item -LiteralPath $Source -Destination $Stage -Force
+}
 foreach ($RuntimeFile in @('ai_engine.dll', 'model.nnue')) {
-    if (-not (Test-Path (Join-Path $Stage $RuntimeFile))) { throw "Bundled AI missing: $RuntimeFile" }
+    if (-not (Test-Path -LiteralPath (Join-Path $Stage $RuntimeFile) -PathType Leaf)) {
+        throw "Bundled AI missing: $RuntimeFile"
+    }
 }
 Copy-Item licenses (Join-Path $Stage 'licenses') -Recurse -Force
 # Bundle the redistributable CRT files so the installer needs no second download.

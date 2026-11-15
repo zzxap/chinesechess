@@ -127,7 +127,7 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Target Name="CopyBundledAI" AfterTargets="Build">
-    <Copy SourceFiles="$(MSBuildThisFileDirectory)..\..\AI\lib-dist\windows\x64\ai_engine.dll;$(MSBuildThisFileDirectory)..\..\AI\lib-dist\model.nnue" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)..\..\AI\lib-dist\windows\x64\ai_engine.dll;$(MSBuildThisFileDirectory)..\..\AI\lib-dist\model.nnue" DestinationFolder="$(TargetDir)" />
   </Target>
   <ImportGroup Label="ReactNativeWindowsTargets">
     <Import Project="$(ReactNativeWindowsDir)\PropertySheets\External\Microsoft.ReactNative.Composition.CppApp.targets" Condition="Exists('$(ReactNativeWindowsDir)\PropertySheets\External\Microsoft.ReactNative.Composition.CppApp.targets')" />

@@ -12,7 +12,12 @@ module.exports = {
     macos: {sourceDir: './macos'},
   },
   // Exclude the other core package from each platform's code generation.
-  dependencies: isMacOS
-    ? {'react-native': {platforms: {ios: null}}}
-    : {'react-native-macos': {platforms: {ios: null, android: null}}},
+  dependencies: {
+    ...(isMacOS
+      ? {'react-native': {platforms: {ios: null}}}
+      : {'react-native-macos': {platforms: {ios: null, android: null}}}),
+    // RNW 0.81 lacks the XamlSupport API required by this WebView version.
+    // Windows opens header links in the system browser instead.
+    'react-native-webview': {platforms: {windows: null}},
+  },
 };

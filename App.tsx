@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {ImageBackground, Modal, Pressable, ScrollView, StatusBar, StyleSheet, Text, useWindowDimensions, View} from 'react-native';
+import {ImageBackground, Linking, Modal, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, useWindowDimensions, View} from 'react-native';
 import {Analysis, applyMove, Board, describeMove, inCheck, initialBoard, legalMoves, Move, opposite, Side} from './src/chess/engine';
 import {suggest} from './src/chess/analyzer';
 import {toFen} from './src/chess/fen';
@@ -25,6 +25,13 @@ export default function App() {
   const [analysisRevision,setAnalysisRevision]=useState(0);
   const [showPosition,setShowPosition]=useState(false);
   const [website,setWebsite]=useState<WebsiteLink | null>(null);
+  const openWebsite=(site: WebsiteLink) => {
+    if (Platform.OS==='windows') {
+      Linking.openURL(site.url).catch(() => setMessage('无法打开系统浏览器，请检查默认浏览器设置。'));
+    } else {
+      setWebsite(site);
+    }
+  };
   const requestVersion=useRef(0);
   const invalidateAnalysis=() => { requestVersion.current++; setAnalysis(null); };
   const moves=useMemo(() => legalMoves(board,turn),[board,turn]);
@@ -100,7 +107,7 @@ export default function App() {
           <Pressable accessibilityLabel="查看本场说明" onPress={() => setRules(true)} style={styles.help}><Text style={styles.helpText}>本场说明</Text></Pressable>
         </View>
         <View style={styles.websiteLinks}>
-          {websiteLinks.map(site => <Pressable key={site.id} accessibilityRole="button" accessibilityLabel={`打开${site.title}`} onPress={() => setWebsite(site)}
+          {websiteLinks.map(site => <Pressable key={site.id} accessibilityRole="button" accessibilityLabel={`打开${site.title}`} onPress={() => openWebsite(site)}
             style={({pressed}) => [styles.websiteButton,pressed && styles.websitePressed]}>
             <Text style={styles.websiteText}>{site.title}</Text>
           </Pressable>)}

@@ -1,4 +1,6 @@
-const isMacOS = process.env.RN_PLATFORM === 'macos';
+const isMacOS = process.env.PLATFORM_NAME
+  ? process.env.PLATFORM_NAME === 'macosx'
+  : process.env.RN_PLATFORM === 'macos';
 
 module.exports = {
   ...(isMacOS

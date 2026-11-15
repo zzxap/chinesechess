@@ -5,6 +5,9 @@ import {suggest} from './src/chess/analyzer';
 import {toFen} from './src/chess/fen';
 import {tableImage} from './src/chess/assets';
 import {ChessBoard} from './src/components/ChessBoard';
+import {WebsiteDialog} from './src/components/WebsiteDialog';
+import {websiteLinks} from './src/websiteLinks';
+import type {WebsiteLink} from './src/websiteLinks';
 
 type Position = {board: Board; turn: Side; last: Move | null};
 const fresh=(): Position => ({board:initialBoard(),turn:'red',last:null});
@@ -21,6 +24,7 @@ export default function App() {
   const [message,setMessage]=useState('');
   const [analysisRevision,setAnalysisRevision]=useState(0);
   const [showPosition,setShowPosition]=useState(false);
+  const [website,setWebsite]=useState<WebsiteLink | null>(null);
   const requestVersion=useRef(0);
   const invalidateAnalysis=() => { requestVersion.current++; setAnalysis(null); };
   const moves=useMemo(() => legalMoves(board,turn),[board,turn]);
@@ -91,8 +95,16 @@ export default function App() {
     <StatusBar barStyle="light-content" backgroundColor="#634329"/>
     <ScrollView contentContainerStyle={styles.scroll}>
       <View style={[styles.header,{maxWidth:wide ? 1030 : 660}]}>
-        <View><Text style={styles.brand}>弈 · 中国象棋</Text><Text style={styles.tagline}>一枰山河，落子有道</Text></View>
-        <Pressable accessibilityLabel="查看本场说明" onPress={() => setRules(true)} style={styles.help}><Text style={styles.helpText}>本场说明</Text></Pressable>
+        <View style={styles.headerHeading}>
+          <View><Text style={styles.brand}>弈 · 中国象棋</Text><Text style={styles.tagline}>一枰山河，落子有道</Text></View>
+          <Pressable accessibilityLabel="查看本场说明" onPress={() => setRules(true)} style={styles.help}><Text style={styles.helpText}>本场说明</Text></Pressable>
+        </View>
+        <View style={styles.websiteLinks}>
+          {websiteLinks.map(site => <Pressable key={site.id} accessibilityRole="button" accessibilityLabel={`打开${site.title}`} onPress={() => setWebsite(site)}
+            style={({pressed}) => [styles.websiteButton,pressed && styles.websitePressed]}>
+            <Text style={styles.websiteText}>{site.title}</Text>
+          </Pressable>)}
+        </View>
       </View>
       <View style={[styles.layout,wide ? styles.horizontal : null]}>
         <View><View style={styles.player}><Text style={[styles.playerText,topSide==='red' && styles.redPlayer]}>● {playerName(topSide)}</Text><Text style={styles.playerMeta}>{playerMeta(topSide)}</Text></View>
@@ -111,6 +123,7 @@ export default function App() {
         <Pressable style={styles.primary} onPress={() => setShowPosition(false)}><Text style={styles.primaryText}>关闭</Text></Pressable>
       </View></View>
     </Modal>
+    <WebsiteDialog site={website} onClose={() => setWebsite(null)}/>
     <Modal transparent visible={rules} animationType="fade" onRequestClose={() => setRules(false)}>
       <View style={styles.scrim}><View style={styles.dialog}>
         <Text style={styles.dialogTitle}>本场说明</Text><View style={styles.divider}/>
@@ -125,7 +138,9 @@ export default function App() {
 }
 const styles=StyleSheet.create({
   root:{flex:1,backgroundColor:'#634329'},scroll:{padding:16,paddingTop:52,alignItems:'center',paddingBottom:40},
-  header:{width:'100%',flexDirection:'row',alignItems:'center',justifyContent:'space-between',marginBottom:24},
+  header:{width:'100%',marginBottom:24,gap:16},headerHeading:{flexDirection:'row',alignItems:'center',justifyContent:'space-between'},
+  websiteLinks:{flexDirection:'row',flexWrap:'wrap',gap:10},websiteButton:{minHeight:42,borderWidth:1,borderColor:'#ab8657',borderRadius:12,paddingHorizontal:14,paddingVertical:11,justifyContent:'center',backgroundColor:'#432d1c55'},
+  websitePressed:{backgroundColor:'#ab865755'},websiteText:{color:'#ffe2ad',fontSize:13,fontWeight:'500'},
   brand:{fontSize:27,fontWeight:'700',color:'#ffe2ad'},tagline:{fontSize:12,color:'#d4b58d',marginTop:6,letterSpacing:3},
   help:{borderWidth:1,borderColor:'#ab8657',borderRadius:18,paddingHorizontal:14,paddingVertical:9},helpText:{color:'#f3dbb6',fontSize:12},
   layout:{gap:22},horizontal:{flexDirection:'row',alignItems:'center'},player:{flexDirection:'row',justifyContent:'space-between',padding:12},

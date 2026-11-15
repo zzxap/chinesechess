@@ -14,7 +14,8 @@
     "typecheck": "tsc --noEmit",
     "start:macos": "RN_PLATFORM=macos react-native start --config metro.macos.config.js --port 16001",
     "dev:native": "node scripts/dev.cjs",
-    "build:engine:libs": "bash scripts/build-ai-engine-libs.sh all"
+    "build:engine:libs": "bash scripts/build-ai-engine-libs.sh all",
+    "postinstall": "node scripts/patch-codegen.cjs"
   },
   "dependencies": {
     "react": "19.1.4",
@@ -22,7 +23,8 @@
     "react-native-macos": "0.81.0",
     "react-native-windows": "0.81.0",
     "react-dom": "19.1.4",
-    "react-native-web": "^0.21.2"
+    "react-native-web": "^0.21.2",
+    "react-native-webview": "17.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

@@ -26,6 +26,8 @@ base64 < /path/to/distribution.p12 | tr -d '\n' | pbcopy
 更换输入路径即可处理 keystore 和 mobileprovision。将剪贴板内容粘贴到对应 Secret，之后清空剪贴板。
 密码填写原始文本，不转 Base64。密钥原件应另行安全备份，尤其 Android 上传密钥。
 
+更新 Apple Secrets 后，可在 Actions → Apple signing preflight → Run workflow 单独验证签名身份，无需先构建整个应用。诊断只包含公开证书信息和验证错误，不输出私钥或密码。
+
 ### Android
 
 | Secret | 内容 |

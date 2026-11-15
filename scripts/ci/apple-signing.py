@@ -72,6 +72,21 @@ output = run('security', 'find-identity', '-v', '-p', 'codesigning', str(keychai
 identities = {fingerprint.upper(): name for fingerprint, name in
               re.findall(r'\b([0-9A-Fa-f]{40})\s+"([^"]+)"', output)}
 if not identities:
+    # Only public certificate metadata is reported; never export or print keys.
+    diagnostic = run('security', 'find-identity', '-p', 'codesigning', str(keychain)).decode()
+    reasons = sorted(set(re.findall(r'CSSMERR_[A-Z_]+', diagnostic)))
+    certificates = run('security', 'find-certificate', '-a', '-p', str(keychain)).decode()
+    for pem in re.findall(r'-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----', certificates, re.S):
+        public = subprocess.run(['openssl', 'x509', '-noout', '-subject', '-issuer', '-dates'],
+                                input=pem.encode(), capture_output=True)
+        metadata = public.stdout.decode(errors='replace')
+        if public.returncode == 0 and any(kind in metadata.split('\n', 1)[0] for kind in
+                                          ('Distribution:', 'Development:', 'Developer ID Application:')):
+            annotation = metadata.strip().replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+            print('::notice::Imported public certificate: ' + annotation, flush=True)
+    if reasons:
+        fail('Imported signing identity failed validation: ' + ', '.join(reasons)
+             + '. Check certificate validity and trust; export the current certificate/private key pair as P12.')
     fail(f'{prefix}_CERTIFICATE_BASE64 contains no valid code-signing identity with a private key. '
          'Export the certificate together with its private key as P12 from Keychain Access > My Certificates; '
          'also check certificate expiration and trust. A CER file alone is insufficient.')

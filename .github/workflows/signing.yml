@@ -1,0 +1,39 @@
+name: Apple signing preflight
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/ci/apple-signing.py
+      - .github/workflows/signing.yml
+
+permissions:
+  contents: read
+
+jobs:
+  signing:
+    name: Signing identity (${{ matrix.platform }})
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ios, macos]
+    runs-on: macos-15-intel
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Validate certificate and private key
+        run: python3 scripts/ci/apple-signing.py "${{ matrix.platform }}"
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROVISION_PROFILE_BASE64_chanesechess: ${{ secrets.IOS_PROVISION_PROFILE_BASE64_chanesechess }}
+          MACOS_CERTIFICATE_BASE64: ${{ secrets.MACOS_CERTIFICATE_BASE64 }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+      - name: Remove temporary signing material
+        if: always()
+        run: python3 scripts/ci/cleanup-apple.py

@@ -26,21 +26,21 @@ export function normalizeFen(text) {
   return `${fields[0]} ${fields[1]} - - 0 1`;
 }
 
-export class Pikafish {
+export class AIEngine {
   constructor() {
-    this.binary=path.resolve(process.env.PIKAFISH_PATH || defaultBinary);
-    this.model=path.resolve(process.env.PIKAFISH_NNUE || path.join(path.dirname(this.binary),'pikafish.nnue'));
+    this.binary=path.resolve(process.env.AI_ENGINE_PATH || process.env.PIKAFISH_PATH || defaultBinary);
+    this.model=path.resolve(process.env.AI_ENGINE_MODEL || process.env.PIKAFISH_NNUE || path.join(path.dirname(this.binary),'pikafish.nnue'));
     this.child=null; this.readyPromise=null; this.waiters=new Set();
     this.tail=Promise.resolve(); this.queued=0; this.closed=false; this.stderr=''; this.stdoutDiagnostics=[];
   }
   write(command) {
-    if (!this.child?.stdin.writable) { throw new Error('Pikafish 进程不可写'); }
+    if (!this.child?.stdin.writable) { throw new Error('AI库进程不可写'); }
     this.child.stdin.write(command+'\n');
   }
   waitFor(predicate,ms=10000) {
     const promise=new Promise((resolve,reject) => {
       const waiter={predicate,resolve:value => { clearTimeout(timer); this.waiters.delete(waiter); resolve(value); },reject:error => { clearTimeout(timer); this.waiters.delete(waiter); reject(error); }};
-      const timer=setTimeout(() => waiter.reject(new Error('Pikafish 响应超时')),ms);
+      const timer=setTimeout(() => waiter.reject(new Error('AI库响应超时')),ms);
       this.waiters.add(waiter);
     });
     // A synchronous pipe failure can happen between registering and awaiting a response.
@@ -54,23 +54,23 @@ export class Pikafish {
     if (child && !child.killed) { child.kill(); }
   }
   ready() {
-    if (this.closed) { return Promise.reject(new Error('Pikafish 服务已关闭')); }
+    if (this.closed) { return Promise.reject(new Error('AI库服务已关闭')); }
     if (this.readyPromise) { return this.readyPromise; }
     this.readyPromise=this.start().catch(error => { this.breakProcess(error); throw error; });
     return this.readyPromise;
   }
   async start() {
-    if (!existsSync(this.binary)) { throw new Error(`找不到 Pikafish 程序：${this.binary}`); }
+    if (!existsSync(this.binary)) { throw new Error(`找不到 AI库程序：${this.binary}`); }
     if (!existsSync(this.model)) { throw new Error(`找不到 NNUE 模型：${this.model}`); }
     this.stderr=''; this.stdoutDiagnostics=[];
     const child=spawn(this.binary,[],{cwd:path.dirname(this.binary),stdio:['pipe','pipe','pipe'],windowsHide:true,shell:false});
     this.child=child;
-    child.on('error',error => this.breakProcess(new Error(`无法启动 Pikafish：${error.message}`),child));
+    child.on('error',error => this.breakProcess(new Error(`无法启动 AI库：${error.message}`),child));
     child.stdin.on('error',error => this.breakProcess(error,child));
     child.stderr.on('data',data => { this.stderr=(this.stderr+data.toString()).slice(-2000); });
     child.on('exit',(code,signal) => {
       const details=[this.stderr,...this.stdoutDiagnostics].filter(Boolean).join('\n').slice(-5000);
-      this.breakProcess(new Error(`Pikafish 已退出（${code ?? signal}）${signal==='SIGILL' ? '：当前程序含不兼容的 CPU 指令，请使用本机编译的兼容版本；程序：'+this.binary : details ? '：'+details : ''}`),child);
+      this.breakProcess(new Error(`AI库已退出（${code ?? signal}）${signal==='SIGILL' ? '：当前程序含不兼容的 CPU 指令，请使用本机编译的兼容版本；程序：'+this.binary : details ? '：'+details : ''}`),child);
     });
     const reader=createInterface({input:child.stdout});
     reader.on('line',line => {
@@ -79,7 +79,7 @@ export class Pikafish {
       if (/\bERROR:|not loaded|Unsupported position/i.test(line)) {
         this.stdoutDiagnostics.push(line.trim());
         this.stdoutDiagnostics=this.stdoutDiagnostics.slice(-12);
-        console.error('[Pikafish] '+line.trim());
+        console.error('[AI库] '+line.trim());
       }
       for (const waiter of [...this.waiters]) { if (waiter.predicate(line.trim())) { waiter.resolve(line.trim()); } }
     });
@@ -91,11 +91,11 @@ export class Pikafish {
     this.write(`setoption name EvalFile value ${this.model}`);
     response=this.waitFor(line => line==='readyok');
     this.write('isready'); await response;
-    console.info('[Pikafish] 常驻进程就绪，PID '+child.pid+'，程序 '+this.binary);
+    console.info('[AI库] 常驻进程就绪，PID '+child.pid+'，程序 '+this.binary);
   }
   analyze(fen) {
     const position=normalizeFen(fen);
-    if (this.queued>=12) { return Promise.reject(new Error('Pikafish 正忙，请稍后重试')); }
+    if (this.queued>=12) { return Promise.reject(new Error('AI库正忙，请稍后重试')); }
     this.queued++;
     // One process, one search at a time: never interleave position/go from concurrent HTTP calls.
     const job=this.tail.then(async () => {
@@ -118,14 +118,14 @@ export class Pikafish {
         this.write('go movetime 1000');
         response=await result;
         const move=response.split(/\s+/)[1];
-        if (!/^[a-i][0-9][a-i][0-9]$/.test(move)) { throw new Error('Pikafish 没有返回可用的最佳着法'); }
+        if (!/^[a-i][0-9][a-i][0-9]$/.test(move)) { throw new Error('AI库没有返回可用的最佳着法'); }
         // Do not pair bestmove with an unrelated intermediate PV.
         if (info.pv[0]!==move) { info={score:null,depth:0,nodes:info.nodes,pv:[move],mate:null}; }
-        return {...info,move,fen:position,source:'pikafish'};
+        return {...info,move,fen:position,source:'ai'};
       } catch (error) { this.breakProcess(error); throw error; }
     });
     this.tail=job.catch(() => {});
     return job.finally(() => { this.queued--; });
   }
-  dispose() { this.closed=true; this.breakProcess(new Error('Pikafish 服务关闭')); }
+  dispose() { this.closed=true; this.breakProcess(new Error('AI库服务关闭')); }
 }

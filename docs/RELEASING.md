@@ -75,15 +75,15 @@ Windows 当前生成未签名 x64 portable ZIP。Windows 商店身份、代码�
 
 ## 产物
 
-| 平台 | 应用 | Pikafish 库 |
+| 平台 | 应用 | AI库 |
 | --- | --- | --- |
 | Android | APK + AAB，arm64 / x86_64 | 两个架构 `.so`，附 C++ runtime、模型及对应源码 |
 | iOS | IPA + xcarchive ZIP | XCFramework 中的 iOS arm64 与模拟器库 |
 | macOS | universal app ZIP + DMG | XCFramework 中的 macOS arm64 / x86_64 库 |
-| Windows | x64 portable ZIP | `pikafish.dll`、`pikafish.lib`（DLL 导入库）、`pikafish-static.lib`（静态库） |
+| Windows | x64 portable ZIP | `ai_engine.dll`、`ai_engine.lib`（DLL 导入库）、`ai_engine-static.lib`（静态库） |
 
-Pikafish 的 C ABI 封装与库包已准备；RN 原生桥接尚未接入，当前原生 App 的 Pikafish 模式仍访问配置的后端。
-因此打包成功不代表本地引擎在手机里已可用。WASM 目前供 Web 模式使用。
+AI库的 C ABI 封装与库包已准备；RN 原生桥接尚未接入，当前原生 App 仍访问配置的本机后端。
+因此打包成功不代表本地引擎在手机里已可用。
 库包附许可证与对应引擎源码；整个应用源码由发行 tag 提供。
 App Store 分发与 GPL 兼容性仍需确认，不能把“已经开源/签名成功”视为已具备上架条件。
 

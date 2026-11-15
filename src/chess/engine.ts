@@ -172,7 +172,7 @@ function evaluate(b: Board, side: Side): number {
   },0);
 }
 export type Candidate = {move: Move; score: number; line: Move[]; scoreKnown?: boolean; rank?: number; note?: string};
-export type Analysis = {move: Move | null; score: number; depth: number; nodes: number; line: Move[]; source: 'search' | 'fairy' | 'cloud' | 'book' | 'pikafish'; engineName?: string; positionFen?: string; remoteMove?: string; scoreKnown?: boolean; depthKnown?: boolean; mate?: number; principles?: string[]; candidates?: Candidate[]; warnings?: string[]};
+export type Analysis = {move: Move | null; score: number; depth: number; nodes: number; line: Move[]; source: 'search' | 'book' | 'ai'; engineName?: string; positionFen?: string; remoteMove?: string; scoreKnown?: boolean; depthKnown?: boolean; mate?: number; principles?: string[]; candidates?: Candidate[]; warnings?: string[]};
 function principleNotes(b: Board,m: Move): string[] {
   const p=b[m.from]!, next=applyMove(b,m), controls=controlMaps(next), notes: string[]=[];
   if (inCheck(b,p.side)) { notes.push('优先解除当前将军'); }

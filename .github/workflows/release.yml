@@ -57,9 +57,9 @@ jobs:
       - name: Build Android native libraries
         run: |
           sdkmanager 'ndk;28.2.13676358' 'cmake;3.22.1'
-          bash scripts/build-pikafish-libs.sh android
-          cd Pikafish
-          zip -r "$GITHUB_WORKSPACE/release-artifacts/pikafish-$APP_VERSION-android.zip" lib-dist
+          bash scripts/build-ai-engine-libs.sh android
+          cd AI
+          zip -r "$GITHUB_WORKSPACE/release-artifacts/ai-engine-$APP_VERSION-android.zip" lib-dist
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: android
@@ -142,11 +142,11 @@ jobs:
       - name: Build Windows app
         shell: pwsh
         run: ./scripts/ci/build-windows.ps1
-      - name: Build Pikafish DLL, import library and static library
+      - name: Build AI library DLL, import library and static library
         shell: pwsh
         run: |
-          ./scripts/build-pikafish-libs.ps1
-          Compress-Archive -Path Pikafish/lib-dist/* -DestinationPath "release-artifacts/pikafish-$env:APP_VERSION-windows-x64.zip"
+          ./scripts/build-ai-engine-libs.ps1
+          Compress-Archive -Path AI/lib-dist/* -DestinationPath "release-artifacts/ai-engine-$env:APP_VERSION-windows-x64.zip"
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: windows
@@ -166,11 +166,11 @@ jobs:
       - run: node scripts/ci/version.mjs
       - run: brew install cmake ninja
       - name: Compile XCFramework
-        run: bash scripts/build-pikafish-libs.sh apple
+        run: bash scripts/build-ai-engine-libs.sh apple
       - name: Package libraries and corresponding source
         run: |
           mkdir -p release-artifacts
-          ditto -c -k --keepParent Pikafish/lib-dist "release-artifacts/pikafish-$APP_VERSION-apple.zip"
+          ditto -c -k --keepParent AI/lib-dist "release-artifacts/ai-engine-$APP_VERSION-apple.zip"
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: apple-libraries
@@ -200,8 +200,8 @@ jobs:
             'Android: signed when upload-key Secrets are configured; otherwise unsigned.' \
             'iOS: App Store signed IPA when certificate/profile Secrets are configured; otherwise unsigned IPA.' \
             'macOS: universal ZIP and DMG; ad-hoc unless a signing identity is configured; not notarized.' \
-            'Windows: unsigned x64 portable app and Pikafish DLL/import/static libraries.' \
-            'No store submission is performed. Native Pikafish RN bridging is not yet integrated.' \
+            'Windows: unsigned x64 portable app and AI library DLL/import/static libraries.' \
+            'No store submission is performed. Native AI library RN bridging is not yet integrated.' \
             'App source is available at this release tag; engine packages include corresponding source and license notices.' > RELEASE_NOTES.md
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" ./* --clobber

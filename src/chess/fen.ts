@@ -17,17 +17,7 @@ export function toFen(board: Board,turn: Side): string {
   return `${ranks.join('/')} ${turn==='red' ? 'w' : 'b'} - - 0 1`;
 }
 
-// Fairy-Stockfish UCI uses ranks 1..10 (UCCI instead uses 0..9).
 export function fromUci(text: string): Move | null {
-  const match=/^([a-i])(10|[1-9])([a-i])(10|[1-9])$/.exec(text);
-  if (!match) { return null; }
-  return {
-    from:(10-Number(match[2]))*9+match[1].charCodeAt(0)-97,
-    to:(10-Number(match[4]))*9+match[3].charCodeAt(0)-97,
-  };
-}
-
-export function fromChessDb(text: string): Move | null {
   const match=/^([a-i])([0-9])([a-i])([0-9])$/.exec(text);
   if (!match) { return null; }
   return {
@@ -36,7 +26,7 @@ export function fromChessDb(text: string): Move | null {
   };
 }
 
-export function toChessDb(move: Move): string {
+export function toUci(move: Move): string {
   const square=(index: number) => `${String.fromCharCode(97+index%9)}${9-Math.floor(index/9)}`;
   return square(move.from)+square(move.to);
 }

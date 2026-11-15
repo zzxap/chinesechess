@@ -4,7 +4,7 @@ import {createChessBackend} from './chess-backend.mjs';
 const backend=createChessBackend();
 const port=Number(process.env.CHESS_BACKEND_PORT || 16002);
 const server=createServer((req,res) => {
-  if (new URL(req.url,'http://localhost').pathname!=='/api/chessdb') { res.writeHead(404); res.end('Not found'); return; }
+  if (new URL(req.url,'http://localhost').pathname!=='/api/ai/analyze') { res.writeHead(404); res.end('Not found'); return; }
   backend.handler(req,res);
 });
 server.listen(port,'127.0.0.1',() => console.log(`Chess backend: http://127.0.0.1:${port}`));

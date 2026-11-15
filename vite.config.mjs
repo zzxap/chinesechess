@@ -10,8 +10,5 @@ export default defineConfig({
   },
   esbuild: {jsx: 'automatic'},
   define: {__DEV__: JSON.stringify(true)},
-  server: {host: '127.0.0.1', port: 16001, strictPort: true, headers: {
-    'Cross-Origin-Opener-Policy': 'same-origin',
-    'Cross-Origin-Embedder-Policy': 'require-corp',
-  }},
+  server: {host: '127.0.0.1', port: 16001, strictPort: true},
 });

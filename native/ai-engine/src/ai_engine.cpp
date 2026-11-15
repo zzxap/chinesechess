@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-#include "pikafish.h"
+#include "ai_engine.h"
 #include "attacks.h"
 #include "engine.h"
 #include "misc.h"
@@ -75,7 +75,7 @@ pf_engine* pf_create(const char* path, int threads, int hash, char* error, size_
         e.verify_network();
         return h.release();
     } catch (const std::exception& ex) { copy(error, size, ex.what()); }
-      catch (...) { copy(error, size, "Pikafish initialization failed"); }
+      catch (...) { copy(error, size, "AI library initialization failed"); }
     return nullptr;
 }
 int pf_analyze(pf_engine* h, const char* fen, int time, pf_result* result, char* error, size_t size) {
@@ -99,7 +99,7 @@ int pf_analyze(pf_engine* h, const char* fen, int time, pf_result* result, char*
         *result = h->result;
         return 0;
     } catch (const std::exception& ex) { copy(error, size, ex.what()); }
-      catch (...) { copy(error, size, "Pikafish analysis failed"); }
+      catch (...) { copy(error, size, "AI library analysis failed"); }
     return -1;
 }
 void pf_stop(pf_engine* h) { if (h) h->engine->stop(); }

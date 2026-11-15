@@ -81,6 +81,8 @@ dist/
 # Native engine build outputs (keep pinned source and build scripts)
 Pikafish/lib-build/
 Pikafish/lib-dist/
+AI/build/
+AI/lib-dist/
 *.o
 *.corrupt-backup
 .pnpm-store/

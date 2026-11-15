@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
-#ifndef CHINESECHESS_PIKAFISH_H
-#define CHINESECHESS_PIKAFISH_H
+#ifndef CHINESECHESS_AI_ENGINE_H
+#define CHINESECHESS_AI_ENGINE_H
 #include <stddef.h>
 #include <stdint.h>
 #if defined(_WIN32) && defined(PF_SHARED)

@@ -112,6 +112,9 @@ jobs:
         run: bash scripts/ci/build-apple.sh "${{ matrix.platform }}"
         env:
           MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       - name: Delete temporary certificates and keychain
         if: always()
         run: python3 scripts/ci/cleanup-apple.py
@@ -201,7 +204,7 @@ jobs:
           printf '%s\n' \
             'Android: signed when upload-key Secrets are configured; otherwise unsigned.' \
             'iOS: App Store signed IPA when certificate/profile Secrets are configured; otherwise unsigned IPA.' \
-            'macOS: universal ZIP and DMG; ad-hoc unless a signing identity is configured; not notarized.' \
+            'macOS: universal ZIP and DMG; Developer ID signed and Apple notarized when signing is configured; otherwise ad-hoc.' \
             'Windows: unsigned x64 portable app and AI library DLL/import/static libraries.' \
             'No store submission is performed. Native AI library RN bridging is not yet integrated.' \
             'App source is available at this release tag; engine packages include corresponding source and license notices.' > RELEASE_NOTES.md

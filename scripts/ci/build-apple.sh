@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 platform="${1:?ios or macos}"
+if [[ "$platform" == macos && "${APPLE_SIGNED:-false}" == true ]]; then
+  : "${APPLE_ID:?Add APPLE_ID to GitHub Actions Secrets for notarization}"
+  : "${APPLE_APP_SPECIFIC_PASSWORD:?Add APPLE_APP_SPECIFIC_PASSWORD to GitHub Actions Secrets for notarization}"
+  : "${APPLE_TEAM_ID:?Missing APPLE_TEAM_ID}"
+fi
 mkdir -p release-artifacts
 if [[ "$platform" == ios ]]; then
   args=("MARKETING_VERSION=$APP_VERSION" "CURRENT_PROJECT_VERSION=$APP_BUILD_NUMBER")
@@ -33,7 +38,13 @@ elif [[ "$platform" == macos ]]; then
   status=adhoc
   if [[ "${APPLE_SIGNED:-false}" == true ]]; then
     codesign --force --deep --options runtime --timestamp --sign "$MACOS_SIGN_IDENTITY" "$app"
-    status=signed
+    codesign --verify --deep --strict --verbose=2 "$app"
+    ditto -c -k --keepParent "$app" "$RUNNER_TEMP/chinesechess-notarize.zip"
+    python3 scripts/ci/notarize-apple.py "$RUNNER_TEMP/chinesechess-notarize.zip"
+    xcrun stapler staple "$app"
+    xcrun stapler validate "$app"
+    spctl --assess --type execute --verbose=2 "$app"
+    status=notarized
   else
     codesign --force --deep --sign - "$app"
   fi
@@ -43,7 +54,14 @@ elif [[ "$platform" == macos ]]; then
   ln -s /Applications "$RUNNER_TEMP/dmg/Applications"
   hdiutil create -volname ChineseChess -srcfolder "$RUNNER_TEMP/dmg" -ov -format UDZO \
     "release-artifacts/chinesechess-$APP_VERSION-macos-universal-$status.dmg"
-  echo "macOS: universal $status ZIP + DMG; notarization is not configured" >> "$GITHUB_STEP_SUMMARY"
+  if [[ "$status" == notarized ]]; then
+    dmg="release-artifacts/chinesechess-$APP_VERSION-macos-universal-$status.dmg"
+    codesign --force --timestamp --sign "$MACOS_SIGN_IDENTITY" "$dmg"
+    python3 scripts/ci/notarize-apple.py "$dmg"
+    xcrun stapler staple "$dmg"
+    xcrun stapler validate "$dmg"
+  fi
+  echo "macOS: universal $status ZIP + DMG" >> "$GITHUB_STEP_SUMMARY"
 else
   echo 'Expected ios or macos' >&2; exit 2
 fi

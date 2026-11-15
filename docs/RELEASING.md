@@ -63,9 +63,13 @@ CI 会补齐 Apple WWDR G3 中间证书，并在归档前检查可用的证书/�
 | `MACOS_CERTIFICATE_BASE64` | 含私钥的 Developer ID Application `.p12` Base64 |
 | `MACOS_CERTIFICATE_PASSWORD` | `.p12` 密码 |
 | `MACOS_SIGN_IDENTITY` | 完整签名身份，如 `Developer ID Application: Your Name (TEAMID)` |
+| `APPLE_ID` | 该开发者团队成员的 Apple 账号邮箱 |
+| `APPLE_APP_SPECIFIC_PASSWORD` | 在 Apple 账号网站生成的 App 专用密码，不是登录密码或 P12 密码 |
 
 缺省使用 ad-hoc 签名，生成 universal ZIP、DMG。正式证书配置后进行 Developer ID 签名。
-当前未配置 notarization，正式签名也不代表已完成公证；该 DMG 路径用于独立分发，不是 Mac App Store 上传包。
+正式签名构建必须同时配置公证凭据与已有的 `APPLE_TEAM_ID`。在 https://account.apple.com 的“登录与安全 → App 专用密码”生成密码，填入 Secret。
+Actions 提交签名应用到 Apple 公证，等待 `Accepted`，再装订并验证应用票据；DMG 也会签名、公证并装订。通过后产物名称包含 `notarized`。
+缺少认证信息或公证被拒绝时直接失败，不会把只有签名的包标记为已公证。该 DMG 路径用于独立分发，不是 Mac App Store 上传包。
 
 Windows 当前生成未签名 x64 portable ZIP。Windows 商店身份、代码签名与 MSIX 发布尚未配置。
 

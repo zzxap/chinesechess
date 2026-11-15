@@ -14,7 +14,7 @@ temp = Path(os.environ['RUNNER_TEMP'])
 keychain = temp / 'chinesechess-signing.keychain-db'
 cert = os.environ.get(prefix + '_CERTIFICATE_BASE64', '')
 password = os.environ.get(prefix + '_CERTIFICATE_PASSWORD', '')
-profile = os.environ.get('IOS_PROVISION_PROFILE_BASE64', '') if platform == 'ios' else ''
+profile = os.environ.get('IOS_PROVISION_PROFILE_BASE64_chanesechess', '') if platform == 'ios' else ''
 team = os.environ.get('APPLE_TEAM_ID', '')
 identity = os.environ.get('MACOS_SIGN_IDENTITY', '') if platform == 'macos' else 'Apple Distribution'
 

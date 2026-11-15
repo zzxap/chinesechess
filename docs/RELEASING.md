@@ -45,7 +45,7 @@ base64 < /path/to/distribution.p12 | tr -d '\n' | pbcopy
 | `APPLE_TEAM_ID` | Apple Developer Team ID |
 | `IOS_CERTIFICATE_BASE64` | 含私钥的 Apple Distribution `.p12` Base64 |
 | `IOS_CERTIFICATE_PASSWORD` | 导出 `.p12` 时设置的密码 |
-| `IOS_PROVISION_PROFILE_BASE64` | App Store Connect 分发描述文件 Base64 |
+| `IOS_PROVISION_PROFILE_BASE64_chanesechess` | App Store Connect 分发描述文件 Base64 |
 
 描述文件必须属于该 Team，且 application-identifier 为 `TEAMID.com.zzxap.chinesechess`，并包含与证书匹配的分发授权。
 只提供 `.cer` 不够，需要包含私钥的 `.p12`。

@@ -40,9 +40,22 @@ $VSWhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer
 $VSRoot = & $VSWhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
 if ($LASTEXITCODE -ne 0 -or -not $VSRoot) { throw 'Visual C++ redistributable location not found' }
 $CRTRoot = Get-ChildItem (Join-Path $VSRoot 'VC/Redist/MSVC') -Directory |
-    Sort-Object Name -Descending | Select-Object -First 1
-$CRTFiles = Get-ChildItem (Join-Path $CRTRoot.FullName 'x64/Microsoft.VC143.CRT') -Filter '*.dll'
+    Where-Object {
+        $_.Name -match '^\d+\.\d+\.\d+(\.\d+)?$' -and
+        (Test-Path -LiteralPath (Join-Path $_.FullName 'x64/Microsoft.VC143.CRT') -PathType Container)
+    } |
+    Sort-Object -Property @{ Expression = { [version]$_.Name }; Descending = $true } |
+    Select-Object -First 1
+if (-not $CRTRoot) { throw 'No versioned x64 Visual C++ CRT directory found under VC/Redist/MSVC' }
+$CRTPath = Join-Path $CRTRoot.FullName 'x64/Microsoft.VC143.CRT'
+foreach ($RequiredDLL in @('vcruntime140.dll', 'vcruntime140_1.dll', 'msvcp140.dll')) {
+    if (-not (Test-Path -LiteralPath (Join-Path $CRTPath $RequiredDLL) -PathType Leaf)) {
+        throw "Visual C++ runtime missing: $RequiredDLL in $CRTPath"
+    }
+}
+$CRTFiles = Get-ChildItem -LiteralPath $CRTPath -Filter '*.dll' -File
 if (-not $CRTFiles) { throw 'Visual C++ redistributable files not found' }
+Write-Host "Bundling x64 Visual C++ runtime from $CRTPath"
 $CRTFiles | Copy-Item -Destination $Stage -Force
 if (-not (Test-Path (Join-Path $Stage 'Bundle/index.windows.bundle'))) {
     Copy-Item windows/ChineseChess/Bundle (Join-Path $Stage 'Bundle') -Recurse -Force

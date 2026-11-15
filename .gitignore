@@ -91,6 +91,8 @@ release-artifacts/
 !.env.example
 *.p12
 *.pfx
+*.jks
+*.p8
 *.mobileprovision
 *.provisionprofile
 *.pem

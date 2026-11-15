@@ -7,17 +7,26 @@ if [[ "$platform" == macos && "${APPLE_SIGNED:-false}" == true ]]; then
   : "${APPLE_TEAM_ID:?Missing APPLE_TEAM_ID}"
 fi
 mkdir -p release-artifacts
+run_xcodebuild() {
+  local build_log="$RUNNER_TEMP/chinesechess-$platform-xcodebuild.log"
+  if xcodebuild "$@" 2>&1 | tee "$build_log"; then
+    return 0
+  else
+    python3 scripts/ci/report-build-error.py "$build_log" || true
+    return 1
+  fi
+}
 if [[ "$platform" == ios ]]; then
   args=("MARKETING_VERSION=$APP_VERSION" "CURRENT_PROJECT_VERSION=$APP_BUILD_NUMBER")
   if [[ "${APPLE_SIGNED:-false}" != true ]]; then
     args+=(CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO)
   fi
-  xcodebuild -workspace ios/ChineseChess.xcworkspace -scheme ChineseChess \
+  run_xcodebuild -workspace ios/ChineseChess.xcworkspace -scheme ChineseChess \
     -configuration Release -destination 'generic/platform=iOS' \
     -archivePath "$RUNNER_TEMP/ChineseChess.xcarchive" archive \
     "${args[@]}"
   if [[ "${APPLE_SIGNED:-false}" == true ]]; then
-    xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/ChineseChess.xcarchive" \
+    run_xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/ChineseChess.xcarchive" \
       -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" -exportPath "$RUNNER_TEMP/ios-export"
     cp "$RUNNER_TEMP/ios-export/ChineseChess.ipa" "release-artifacts/chinesechess-$APP_VERSION-ios-appstore.ipa"
     echo 'iOS: App Store signed IPA (not uploaded to App Store Connect)' >> "$GITHUB_STEP_SUMMARY"
@@ -29,7 +38,7 @@ if [[ "$platform" == ios ]]; then
   fi
   ditto -c -k --keepParent "$RUNNER_TEMP/ChineseChess.xcarchive" "release-artifacts/chinesechess-$APP_VERSION-ios.xcarchive.zip"
 elif [[ "$platform" == macos ]]; then
-  RN_PLATFORM=macos xcodebuild -workspace macos/ChineseChess.xcworkspace -scheme ChineseChess-macOS \
+  RN_PLATFORM=macos run_xcodebuild -workspace macos/ChineseChess.xcworkspace -scheme ChineseChess-macOS \
     -configuration Release -destination 'generic/platform=macOS' \
     -derivedDataPath "$RUNNER_TEMP/macos-build" build \
     ARCHS='arm64 x86_64' ONLY_ACTIVE_ARCH=NO CODE_SIGNING_ALLOWED=NO \

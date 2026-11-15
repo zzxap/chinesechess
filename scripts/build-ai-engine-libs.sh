@@ -68,3 +68,6 @@ if [[ "$TARGET" != all && "$TARGET" != apple && "$TARGET" != android ]]; then
   exit 2
 fi
 python3 "$ROOT/native/ai-engine/package.py"
+if [[ "$TARGET" == apple || "$TARGET" == all ]]; then
+  python3 "$ROOT/scripts/ci/prepare-apple-ai.py"
+fi

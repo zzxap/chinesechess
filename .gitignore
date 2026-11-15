@@ -84,6 +84,7 @@ Pikafish/lib-build/
 Pikafish/lib-dist/
 AI/build/
 AI/lib-dist/
+/native/ai-engine/vendor/
 *.o
 *.corrupt-backup
 .pnpm-store/

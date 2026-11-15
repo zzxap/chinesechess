@@ -107,6 +107,9 @@ jobs:
         run: |
           mkdir -p AI
           ditto -x -k "$RUNNER_TEMP/apple-ai-libraries/ai-engine-$APP_VERSION-apple.zip" AI
+          python3 scripts/ci/prepare-apple-ai.py
+      - name: Validate Apple AI Pod file references
+        run: bundle exec ruby scripts/ci/validate-apple-ai-pod.rb
       - name: Install Pods
         working-directory: ${{ matrix.platform }}
         run: bundle exec pod install

@@ -23,9 +23,13 @@ with tarfile.open(dist / 'ai-engine-source.tar.gz', 'w:gz') as archive:
             archive.add(path, arcname='upstream/' + path.relative_to(upstream).as_posix())
     for directory in ['native/ai-engine']:
         for path in (root / directory).rglob('*'):
+            if 'vendor' in path.relative_to(root / directory).parts:
+                continue
             if path.is_file(): archive.add(path, arcname=path.relative_to(root).as_posix())
     archive.add(root / 'scripts/build-ai-engine-libs.sh', arcname='scripts/build-ai-engine-libs.sh')
     archive.add(root / 'scripts/build-ai-engine-libs.ps1', arcname='scripts/build-ai-engine-libs.ps1')
+    archive.add(root / 'scripts/ci/prepare-apple-ai.py', arcname='scripts/ci/prepare-apple-ai.py')
+    archive.add(root / 'scripts/ci/validate-apple-ai-pod.rb', arcname='scripts/ci/validate-apple-ai-pod.rb')
 files = sorted(p for p in dist.rglob('*') if p.is_file() and p.name != 'SHA256SUMS')
 (dist / 'SHA256SUMS').write_text(''.join(hashlib.sha256(p.read_bytes()).hexdigest() + '  ' + p.relative_to(dist).as_posix() + '\n' for p in files))
 print('Packaged native libraries at', dist)

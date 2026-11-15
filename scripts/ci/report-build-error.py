@@ -7,7 +7,7 @@ import sys
 log = Path(sys.argv[1]).read_text(encoding='utf-8', errors='replace')
 log = re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '', log)
 values = [value for name, value in os.environ.items()
-          if value and name.startswith(('ANDROID_', 'IOS_', 'MACOS_'))
+          if value and name.startswith(('ANDROID_', 'IOS_', 'MACOS_', 'APPLE_'))
           and ('PASSWORD' in name or 'BASE64' in name or name.endswith('KEY_ALIAS'))]
 for value in sorted(values, key=len, reverse=True):
     log = log.replace(value, '***')
@@ -22,6 +22,9 @@ for index, line in enumerate(lines):
                 messages.append(detail.strip())
 causes = [line.strip() for line in lines if 'Caused by:' in line]
 messages.extend(causes[-4:])
+for index, line in enumerate(lines):
+    if 'Undefined symbols for architecture' in line:
+        messages.extend(detail.strip() for detail in lines[index:index + 20] if detail.strip())
 if not messages:
     messages = [line.strip() for line in lines if re.search(r'\berror\b|CMake Error|FAILURE:', line, re.I)][-8:]
 messages = list(dict.fromkeys(messages))[:20]

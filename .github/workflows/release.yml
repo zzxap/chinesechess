@@ -1,0 +1,210 @@
+name: Tag release - Android iOS Windows macOS
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version for a build without publishing (for example v0.0.1)'
+        required: true
+        default: v0.0.1
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_VERSION: ${{ inputs.version || github.ref_name }}
+  CI: 'true'
+
+jobs:
+  android:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          version: 10.11.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          cache: pnpm
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: node scripts/ci/version.mjs
+      - name: Build APK and AAB
+        run: bash scripts/ci/build-android.sh
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      - name: Remove signing file
+        if: always()
+        run: rm -f "$RUNNER_TEMP/chinesechess-upload.keystore"
+      - name: Build Android native libraries
+        run: |
+          sdkmanager 'ndk;28.2.13676358' 'cmake;3.22.1'
+          bash scripts/build-pikafish-libs.sh android
+          cd Pikafish
+          zip -r "$GITHUB_WORKSPACE/release-artifacts/pikafish-$APP_VERSION-android.zip" lib-dist
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: android
+          path: release-artifacts/*
+          if-no-files-found: error
+
+  apple:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ios, macos]
+    runs-on: macos-15-intel
+    timeout-minutes: 90
+    env:
+      RN_PLATFORM: ${{ matrix.platform }}
+      RCT_NEW_ARCH_ENABLED: '1'
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          version: 10.11.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          cache: pnpm
+      - uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+      - run: pnpm install --frozen-lockfile
+      - run: node scripts/ci/version.mjs
+      - name: Install Pods
+        working-directory: ${{ matrix.platform }}
+        run: bundle exec pod install
+      - name: Prepare temporary signing keychain
+        run: python3 scripts/ci/apple-signing.py "${{ matrix.platform }}"
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
+          MACOS_CERTIFICATE_BASE64: ${{ secrets.MACOS_CERTIFICATE_BASE64 }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+      - name: Archive application
+        run: bash scripts/ci/build-apple.sh "${{ matrix.platform }}"
+        env:
+          MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+      - name: Delete temporary certificates and keychain
+        if: always()
+        run: python3 scripts/ci/cleanup-apple.py
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: ${{ matrix.platform }}
+          path: release-artifacts/*
+          if-no-files-found: error
+
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          version: 10.11.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          cache: pnpm
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - uses: microsoft/setup-msbuild@6fb02220983dee41ce7ae257b6f4d8f9bf5ed4ce # v2
+      - run: pnpm install --frozen-lockfile
+      - run: node scripts/ci/version.mjs
+      - name: Build Windows app
+        shell: pwsh
+        run: ./scripts/ci/build-windows.ps1
+      - name: Build Pikafish DLL, import library and static library
+        shell: pwsh
+        run: |
+          ./scripts/build-pikafish-libs.ps1
+          Compress-Archive -Path Pikafish/lib-dist/* -DestinationPath "release-artifacts/pikafish-$env:APP_VERSION-windows-x64.zip"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: windows
+          path: release-artifacts/*
+          if-no-files-found: error
+
+  apple-libraries:
+    runs-on: macos-15-intel
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+      - run: node scripts/ci/version.mjs
+      - run: brew install cmake ninja
+      - name: Compile XCFramework
+        run: bash scripts/build-pikafish-libs.sh apple
+      - name: Package libraries and corresponding source
+        run: |
+          mkdir -p release-artifacts
+          ditto -c -k --keepParent Pikafish/lib-dist "release-artifacts/pikafish-$APP_VERSION-apple.zip"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: apple-libraries
+          path: release-artifacts/*
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [android, apple, windows, apple-libraries]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          path: release-artifacts
+          merge-multiple: true
+      - name: Publish release with checksums
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          cd release-artifacts
+          sha256sum -- * > SHA256SUMS
+          printf '%s\n' \
+            'Android: signed when upload-key Secrets are configured; otherwise unsigned.' \
+            'iOS: App Store signed IPA when certificate/profile Secrets are configured; otherwise unsigned IPA.' \
+            'macOS: universal ZIP and DMG; ad-hoc unless a signing identity is configured; not notarized.' \
+            'Windows: unsigned x64 portable app and Pikafish DLL/import/static libraries.' \
+            'No store submission is performed. Native Pikafish RN bridging is not yet integrated.' \
+            'App source is available at this release tag; engine packages include corresponding source and license notices.' > RELEASE_NOTES.md
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" ./* --clobber
+          else
+            gh release create "$TAG" ./* --title "$TAG" --notes-file RELEASE_NOTES.md --verify-tag
+          fi

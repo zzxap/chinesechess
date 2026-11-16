@@ -1,0 +1,13 @@
+name: AiBindings
+description: C ABI bindings for the bundled Chinese chess AI library.
+output: lib/ai/bindings.dart
+headers:
+  entry-points:
+    - native/include/ai_engine.h
+functions:
+  include:
+    - 'pf_.*'
+structs:
+  include:
+    - pf_result
+    - pf_engine

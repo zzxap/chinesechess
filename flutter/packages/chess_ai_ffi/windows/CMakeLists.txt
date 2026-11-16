@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.14)
+project(chess_ai_ffi LANGUAGES CXX)
+set(AI_DLL "${CMAKE_CURRENT_SOURCE_DIR}/vendor/ai_engine.dll")
+if(NOT EXISTS "${AI_DLL}")
+  message(FATAL_ERROR "Run python tool/prepare_native.py --platform windows after building the Windows AI library")
+endif()
+set(chess_ai_ffi_bundled_libraries "${AI_DLL}" PARENT_SCOPE)

@@ -6,6 +6,7 @@ on:
     paths:
       - 'flutter/**'
       - '.github/workflows/flutter-static.yml'
+      - 'scripts/ci/report-build-error.py'
   workflow_dispatch:
 
 permissions:

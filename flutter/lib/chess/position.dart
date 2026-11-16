@@ -21,7 +21,7 @@ class Move {
   int get hashCode => Object.hash(from, to);
   String get uci => '${String.fromCharCode(97+from%9)}${9-from~/9}${String.fromCharCode(97+to%9)}${9-to~/9}';
   static Move? parse(String text) {
-    if (!RegExp(r'^[a-i][0-9][a-i][0-9]$').hasMatch(text)) return null;
+    if (!RegExp(r'^[a-i][0-9][a-i][0-9]$').hasMatch(text)) { return null; }
     return Move((9-int.parse(text[1]))*9+text.codeUnitAt(0)-97,
       (9-int.parse(text[3]))*9+text.codeUnitAt(2)-97);
   }
@@ -50,7 +50,7 @@ class Position {
   Position play(Move move) => Position(_after(move),turn.opposite,move);
   bool _inside(int x,int y) => x>=0 && x<9 && y>=0 && y<10;
   Iterable<int> _pseudo(int from) sync* {
-    final piece=board[from]; if (piece==null) return;
+    final piece=board[from]; if (piece==null) { return; }
     final x=from%9,y=from~/9;
     bool accepts(int a,int b) => _inside(a,b) && board[b*9+a]?.side!=piece.side;
     bool palace(int a,int b) => a>=3 && a<=5 && (piece.side==Side.red ? b>=7 && b<=9 : b>=0 && b<=2);
@@ -64,59 +64,59 @@ class Position {
             final target=board[b*9+a];
             if (!screen) {
               if (target==null) { yield b*9+a; }
-              else if (piece.kind==Kind.rook) { if (target.side!=piece.side) yield b*9+a; break; }
+              else if (piece.kind==Kind.rook) { if (target.side!=piece.side) { yield b*9+a; } break; }
               else { screen=true; }
-            } else if (target!=null) { if (target.side!=piece.side) yield b*9+a; break; }
+            } else if (target!=null) { if (target.side!=piece.side) { yield b*9+a; } break; }
           }
         }
       case Kind.horse:
         for (final (dx,dy) in [(2,1),(2,-1),(-2,1),(-2,-1),(1,2),(-1,2),(1,-2),(-1,-2)]) {
-          if (!accepts(x+dx,y+dy)) continue;
+          if (!accepts(x+dx,y+dy)) { continue; }
           final leg=dx.abs()==2 ? y*9+x+dx~/2 : (y+dy~/2)*9+x;
-          if (board[leg]==null) yield (y+dy)*9+x+dx;
+          if (board[leg]==null) { yield (y+dy)*9+x+dx; }
         }
       case Kind.elephant:
         for (final dx in [-2,2]) { for (final dy in [-2,2]) {
           final a=x+dx,b=y+dy;
-          if (accepts(a,b) && (piece.side==Side.red ? b>=5 : b<=4) && board[(y+dy~/2)*9+x+dx~/2]==null) yield b*9+a;
+          if (accepts(a,b) && (piece.side==Side.red ? b>=5 : b<=4) && board[(y+dy~/2)*9+x+dx~/2]==null) { yield b*9+a; }
         } }
       case Kind.advisor:
         for (final dx in [-1,1]) { for (final dy in [-1,1]) {
-          if (palace(x+dx,y+dy) && accepts(x+dx,y+dy)) yield (y+dy)*9+x+dx;
+          if (palace(x+dx,y+dy) && accepts(x+dx,y+dy)) { yield (y+dy)*9+x+dx; }
         } }
       case Kind.king:
         for (final (dx,dy) in directions) {
-          if (palace(x+dx,y+dy) && accepts(x+dx,y+dy)) yield (y+dy)*9+x+dx;
+          if (palace(x+dx,y+dy) && accepts(x+dx,y+dy)) { yield (y+dy)*9+x+dx; }
         }
         for (final dy in [-1,1]) {
           for (var b=y+dy;_inside(x,b);b+=dy) {
             final target=board[b*9+x];
-            if (target!=null) { if (target.kind==Kind.king && target.side!=piece.side) yield b*9+x; break; }
+            if (target!=null) { if (target.kind==Kind.king && target.side!=piece.side) { yield b*9+x; } break; }
           }
         }
       case Kind.pawn:
         final forward=piece.side==Side.red ? -1 : 1;
-        if (accepts(x,y+forward)) yield (y+forward)*9+x;
+        if (accepts(x,y+forward)) { yield (y+forward)*9+x; }
         if (piece.side==Side.red ? y<=4 : y>=5) {
-          for (final dx in [-1,1]) { if (accepts(x+dx,y)) yield y*9+x+dx; }
+          for (final dx in [-1,1]) { if (accepts(x+dx,y)) { yield y*9+x+dx; } }
         }
     }
   }
   bool inCheck(Side side) {
     final king=board.indexWhere((p)=>p?.side==side && p?.kind==Kind.king);
-    if (king<0) return true;
+    if (king<0) { return true; }
     for (var from=0;from<90;from++) {
-      if (board[from]!=null && board[from]!.side!=side && _pseudo(from).contains(king)) return true;
+      if (board[from]!=null && board[from]!.side!=side && _pseudo(from).contains(king)) { return true; }
     }
     return false;
   }
   List<Move> legalMoves() {
     final moves=<Move>[];
     for (var from=0;from<90;from++) {
-      if (board[from]?.side!=turn) continue;
+      if (board[from]?.side!=turn) { continue; }
       for (final to in _pseudo(from)) {
         final move=Move(from,to);
-        if (!Position(_after(move),turn).inCheck(turn)) moves.add(move);
+        if (!Position(_after(move),turn).inCheck(turn)) { moves.add(move); }
       }
     }
     return moves;
@@ -132,7 +132,7 @@ class Position {
         if (empty>0) { rank.write(empty); empty=0; }
         final code=codes[p.kind.index]; rank.write(p.side==Side.red ? code.toUpperCase() : code);
       }
-      if (empty>0) rank.write(empty);
+      if (empty>0) { rank.write(empty); }
       ranks.add(rank.toString());
     }
     return '${ranks.join('/')} ${turn==Side.red ? 'w' : 'b'} - - 0 1';

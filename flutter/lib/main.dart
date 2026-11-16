@@ -26,21 +26,21 @@ class ChessPage extends StatefulWidget {
 class _ChessPageState extends State<ChessPage> {
   final game=GameController();
   @override
-  void initState() { super.initState();WidgetsBinding.instance.addPostFrameCallback((_) { if (mounted) unawaited(game.start()); }); }
+  void initState() { super.initState();WidgetsBinding.instance.addPostFrameCallback((_) { if (mounted) { unawaited(game.start()); } }); }
   @override
   void dispose() { game.dispose();super.dispose(); }
   Future<void> _open(String url) async {
     try {
-      if (await launchUrl(Uri.parse(url),mode:LaunchMode.externalApplication)) return;
+      if (await launchUrl(Uri.parse(url),mode:LaunchMode.externalApplication)) { return; }
     } catch (_) { /* Show an actionable UI error below. */ }
-    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('无法打开系统浏览器，请检查默认浏览器设置。')));
+    if (mounted) { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('无法打开系统浏览器，请检查默认浏览器设置。'))); }
   }
   void _rules()=>showDialog<void>(context:context,builder:(context)=>AlertDialog(
     title:const Text('本场说明'),content:const Text('红先黑后，轮流行棋。\n\n落子后 AI 自动分析当前局面，以箭头提示下一方。\n\nAI 在设备本地运行，默认思考 1 秒；人机模式由你执红。\n\n暂未加入联网、计时和长将长捉裁定。'),
     actions:[TextButton(onPressed:()=>Navigator.pop(context),child:const Text('开始对弈'))]));
   void _fen()=>showDialog<void>(context:context,builder:(context)=>AlertDialog(title:const Text('当前局面'),
     content:SelectableText(game.position.fen),actions:[TextButton(onPressed:()=>Navigator.pop(context),child:const Text('关闭')),
-      TextButton(onPressed:() async { await Clipboard.setData(ClipboardData(text:game.position.fen));if (context.mounted) Navigator.pop(context); },child:const Text('复制 FEN'))]));
+      TextButton(onPressed:() async { await Clipboard.setData(ClipboardData(text:game.position.fen));if (context.mounted) { Navigator.pop(context); } },child:const Text('复制 FEN'))]));
   @override
   Widget build(BuildContext context)=>Scaffold(body:DecoratedBox(
     decoration:const BoxDecoration(image:DecorationImage(image:AssetImage('assets/chess/table.png'),fit:BoxFit.cover)),
@@ -92,6 +92,6 @@ class _ChessPageState extends State<ChessPage> {
   }
   Future<void> _restart() async {
     final yes=await showDialog<bool>(context:context,builder:(context)=>AlertDialog(title:const Text('重新开局'),content:const Text('将清空当前棋局。'),actions:[TextButton(onPressed:()=>Navigator.pop(context,false),child:const Text('取消')),FilledButton(onPressed:()=>Navigator.pop(context,true),child:const Text('重新开局'))]));
-    if (yes==true && mounted) game.reset();
+    if (yes==true && mounted) { game.reset(); }
   }
 }

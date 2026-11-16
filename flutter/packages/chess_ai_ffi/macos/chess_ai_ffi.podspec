@@ -10,6 +10,11 @@ Pod::Spec.new do |s|
   s.source_files = 'Classes/*.{c,h}'
   s.vendored_frameworks = 'vendor/AIEngine.xcframework'
   s.libraries = 'c++'
+  # Retain the C API both when this Pod is built as a dynamic framework and
+  # when the app consumes static Pod libraries.
+  s.pod_target_xcconfig = {
+    'OTHER_LDFLAGS' => '$(inherited) -Wl,-u,_pf_create -Wl,-u,_pf_analyze -Wl,-u,_pf_stop -Wl,-u,_pf_destroy'
+  }
   s.user_target_xcconfig = {
     'OTHER_LDFLAGS' => '$(inherited) -Wl,-u,_pf_create -Wl,-u,_pf_analyze -Wl,-u,_pf_stop -Wl,-u,_pf_destroy -Wl,-export_dynamic'
   }

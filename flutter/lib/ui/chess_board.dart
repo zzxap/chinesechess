@@ -46,9 +46,9 @@ class _Guides extends CustomPainter {
       canvas.drawCircle(point(target),cell*(occupied ? .39 : .105),Paint()..color=_teal.withValues(alpha:.75)..style=(occupied ? PaintingStyle.stroke : PaintingStyle.fill)..strokeWidth=3);
     }
     final hint=game.hint;
-    if (hint==null) return;
+    if (hint==null) { return; }
     final start=point(hint.from),end=point(hint.to),delta=end-start;
-    if (delta.distance<1) return;
+    if (delta.distance<1) { return; }
     final unit=delta/delta.distance;
     final a=start+unit*cell*.16,b=end-unit*cell*.18;
     final paint=Paint()..color=_teal..strokeWidth=math.max(3,cell*.065)..strokeCap=StrokeCap.round;

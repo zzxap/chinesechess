@@ -44,7 +44,7 @@ dart run ffigen --config ffigen.yaml
 
 输出为 `lib/ai/bindings.dart`，上层只依赖 `AiBindings`、`pf_engine`、`pf_result`，可直接重新生成。需安装 LLVM/libclang；macOS 可用 `brew install llvm`，Windows 安装 LLVM。
 
-本次受限环境中 Dart VM 在 CPU 初始化阶段退出，尚未能实际执行 ffigen 和 Flutter analyze。当前 `bindings.dart` 明确标注为与头文件一致的启动绑定，运行上面的命令将其替换为真正的 ffigen 生成结果，不能把当前文件当作已经过生成器验证的输出。
+本机会话中的 Dart VM 在 CPU 初始化阶段退出，因此由 GitHub Linux 执行真实 ffigen 生成和 Flutter analyze。`bindings.dart` 为生成产物，不手工修改；更新 C 头文件后重新运行生成命令。
 
 ## 原生打包
 

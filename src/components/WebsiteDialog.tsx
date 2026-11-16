@@ -1,8 +1,9 @@
 import React, {useRef, useState} from 'react';
-import {ActivityIndicator, Linking, Modal, Pressable, SafeAreaView, StatusBar, StyleSheet, Text, View} from 'react-native';
+import {ActivityIndicator, Linking, Pressable, SafeAreaView, StatusBar, StyleSheet, Text, View} from 'react-native';
 import {WebView} from 'react-native-webview';
 import type {WebsiteDialogProps, WebsiteLink} from '../websiteLinks';
 import {BrowserToolbar} from './BrowserToolbar';
+import {AppModal} from './AppModal';
 
 export function WebsiteDialog({site,onClose}: WebsiteDialogProps) {
   return site ? <NativeBrowser key={site.id} site={site} onClose={onClose}/> : null;
@@ -21,7 +22,7 @@ function NativeBrowser({site,onClose}: {site: WebsiteLink; onClose: () => void})
   const external=() => {
     Linking.openURL(currentUrl).catch(() => setMessage('无法打开浏览器，请稍后再试。'));
   };
-  return <Modal visible animationType="slide" presentationStyle="fullScreen" onRequestClose={() => {
+  return <AppModal visible animationType="slide" presentationStyle="fullScreen" onRequestClose={() => {
     if (canGoBack) { browser.current?.goBack(); } else { onClose(); }
   }}>
     <SafeAreaView style={styles.root}>
@@ -50,7 +51,7 @@ function NativeBrowser({site,onClose}: {site: WebsiteLink; onClose: () => void})
           <Pressable accessibilityRole="button" onPress={retry} style={styles.retry}><Text style={styles.retryText}>重新加载</Text></Pressable>
         </View>}/>
     </SafeAreaView>
-  </Modal>;
+  </AppModal>;
 }
 
 const styles=StyleSheet.create({

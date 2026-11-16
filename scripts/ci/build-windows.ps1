@@ -35,6 +35,7 @@ foreach ($RuntimeFile in @('ai_engine.dll', 'model.nnue')) {
     }
 }
 Copy-Item licenses (Join-Path $Stage 'licenses') -Recurse -Force
+Copy-Item windows/ChineseChess/ChineseChess.ico $Stage -Force
 # Bundle the redistributable CRT files so the installer needs no second download.
 $VSWhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
 $VSRoot = & $VSWhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath

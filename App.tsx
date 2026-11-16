@@ -1,10 +1,11 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {ImageBackground, Linking, Modal, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, useWindowDimensions, View} from 'react-native';
+import {ImageBackground, Linking, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, useWindowDimensions, View} from 'react-native';
 import {Analysis, applyMove, Board, describeMove, inCheck, initialBoard, legalMoves, Move, opposite, Side} from './src/chess/engine';
 import {suggest} from './src/chess/analyzer';
 import {toFen} from './src/chess/fen';
 import {tableImage} from './src/chess/assets';
 import {ChessBoard} from './src/components/ChessBoard';
+import {AppModal} from './src/components/AppModal';
 import {WebsiteDialog} from './src/components/WebsiteDialog';
 import {websiteLinks} from './src/websiteLinks';
 import type {WebsiteLink} from './src/websiteLinks';
@@ -120,7 +121,7 @@ export default function App() {
         </View>{panel}
       </View>
     </ScrollView>
-    <Modal transparent visible={showPosition} animationType="fade" onRequestClose={() => setShowPosition(false)}>
+    <AppModal transparent visible={showPosition} animationType="fade" onRequestClose={() => setShowPosition(false)}>
       <View style={styles.scrim}><View style={styles.dialog}>
         <Text style={styles.dialogTitle}>当前局面代码</Text>
         {!!analysis?.engineName && <Text style={styles.note}>来源：{analysis.engineName}</Text>}
@@ -129,9 +130,9 @@ export default function App() {
         <Text style={styles.note}>可选中复制这段 FEN，用于记录当前局面。</Text>
         <Pressable style={styles.primary} onPress={() => setShowPosition(false)}><Text style={styles.primaryText}>关闭</Text></Pressable>
       </View></View>
-    </Modal>
+    </AppModal>
     <WebsiteDialog site={website} onClose={() => setWebsite(null)}/>
-    <Modal transparent visible={rules} animationType="fade" onRequestClose={() => setRules(false)}>
+    <AppModal transparent visible={rules} animationType="fade" onRequestClose={() => setRules(false)}>
       <View style={styles.scrim}><View style={styles.dialog}>
         <Text style={styles.dialogTitle}>本场说明</Text><View style={styles.divider}/>
         <Text style={styles.ruleText}>红先黑后，轮流行棋。</Text>
@@ -140,7 +141,7 @@ export default function App() {
         <Text style={styles.note}>当前为本地双人 / 人机原型。暂未实现长将长捉裁定、联网和对局计时。</Text>
         <Pressable style={styles.primary} onPress={() => setRules(false)}><Text style={styles.primaryText}>开始对弈</Text></Pressable>
       </View></View>
-    </Modal>
+    </AppModal>
   </ImageBackground>;
 }
 const styles=StyleSheet.create({

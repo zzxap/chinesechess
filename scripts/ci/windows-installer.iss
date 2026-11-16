@@ -12,6 +12,7 @@ OutputBaseFilename=chinesechess-{#AppVersion}-windows-x64-setup-unsigned
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
+SetupIconFile={#SourceDir}\ChineseChess.ico
 UninstallDisplayIcon={app}\ChineseChess.exe
 
 [Files]

@@ -42,6 +42,7 @@ Android、iOS、macOS 和 Windows 通过原生接口在进程内调用 AI库，�
 Android 首次分析会把内置模型校验并复制到应用私有目录。浏览器开发版本仍通过本机服务计算。
 
 iOS、Android、macOS 网页窗口使用原生 WebView；Windows 点击头部链接使用系统浏览器打开。新增依赖后需在 iOS / macOS 工程目录重新执行 `bundle exec pod install`，并重新编译原生应用。
+macOS 的弹窗使用窗口内遮罩层，避开 RN macOS 0.81 尚未实现的 Fabric ModalHostView；其他平台继续使用原生弹窗。
 浏览器版本使用内嵌网页，提供“在浏览器打开”入口。
 
 依赖安装的 `postinstall` 会为 RN 0.81 的 Codegen 应用包名过滤兼容修正，防止 iOS 与 macOS 同名模块在 Xcode Generate Specs 阶段重复扫描。升级 RN 主版本时需一并检查该修正。

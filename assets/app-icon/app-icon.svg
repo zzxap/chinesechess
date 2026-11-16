@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+<title>中国象棋 AI — 将</title>
+<defs>
+ <linearGradient id="table" x2="1" y2="1"><stop stop-color="#573a29"/><stop offset="1" stop-color="#2d201a"/></linearGradient>
+ <radialGradient id="wood" cx=".33" cy=".22" r=".85"><stop stop-color="#ffe7b1"/><stop offset=".65" stop-color="#e9bf7c"/><stop offset="1" stop-color="#cb8c45"/></radialGradient>
+ <linearGradient id="edge" x2="0" y2="1"><stop stop-color="#ffe4a3"/><stop offset=".5" stop-color="#c18a48"/><stop offset="1" stop-color="#88512c"/></linearGradient>
+ <linearGradient id="badge" x2="0" y2="1"><stop stop-color="#b64b36"/><stop offset="1" stop-color="#842d25"/></linearGradient>
+</defs>
+<rect width="1024" height="1024" fill="url(#table)"/>
+<rect x="29" y="29" width="966" height="966" rx="160" fill="none" stroke="#b0824a" stroke-width="3" opacity=".5"/>
+<path d="M 60 260 H 964 M 60 765 H 964 M 260 60 V 964 M 764 60 V 964" stroke="#d0a46a" stroke-width="3" opacity=".08"/>
+<ellipse cx="505" cy="610" rx="390" ry="357" fill="#1e130e" opacity=".35"/>
+<circle cx="495" cy="568" r="382" fill="url(#edge)" stroke="#926034" stroke-width="6"/>
+<circle cx="495" cy="544" r="377" fill="url(#wood)" stroke="#ffedc4" stroke-width="7"/>
+<circle cx="495" cy="544" r="340" fill="none" stroke="#8b6037" stroke-width="3" opacity=".6"/>
+<circle cx="495" cy="544" r="321" fill="none" stroke="#4d4030" stroke-width="7"/>
+<path d="M 195 420 Q 465 372 785 420 M 177 590 Q 440 550 812 590 M 228 724 Q 500 688 757 724" fill="none" stroke="#a36c37" stroke-width="3" opacity=".09"/>
+<rect x="692" y="71" width="247" height="189" rx="49" fill="#1d140f" opacity=".3"/>
+<rect x="684" y="60" width="247" height="189" rx="49" fill="url(#badge)" stroke="#f0cd8e" stroke-width="6"/>
+<path d="M343 447Q413 532 448.5 620.5Q484 709 497 833Q578 819 610.0 808.0Q642 797 654.5 790.5Q667 784 667.0 775.0Q667 766 652.0 763.0Q637 760 628.0 749.0Q619 738 589 688H745Q758 710 769.0 724.5Q780 739 783.5 741.5Q787 744 792 744Q805 744 868.5 703.5Q932 663 932.0 650.0Q932 637 906 635Q897 634 890.0 628.0Q883 622 871 603Q803 499 740 445Q808 436 821.5 431.0Q835 426 835.0 415.5Q835 405 812 395V296H821Q841 333 852.0 349.0Q863 365 869 365Q879 365 924.0 327.5Q969 290 969.0 276.5Q969 263 945 263H812V12Q812 -26 806.5 -46.5Q801 -67 785.0 -79.5Q769 -92 726.0 -102.5Q683 -113 661.0 -113.0Q639 -113 638 -97Q634 -55 611.5 -36.0Q589 -17 533 -2Q520 2 520.0 5.5Q520 9 531 9L584 8Q635 8 661.5 14.0Q688 20 688 44V263H492Q535 250 563.5 233.5Q592 217 603.5 199.5Q615 182 615.0 152.5Q615 123 595.5 100.0Q576 77 543 77Q525 77 509.0 93.5Q493 110 497 130Q498 135 498 141Q498 166 479.0 200.0Q460 234 427 263H343V36Q343 -12 344 -32L345 -67Q345 -81 315.5 -93.0Q286 -105 259.5 -105.0Q233 -105 228.0 -103.0Q223 -101 223 -89V326L97 136Q90 124 86.0 124.0Q82 124 79.0 126.5Q76 129 54.0 164.5Q32 200 12 246Q150 320 223 370V733Q223 783 221 822Q372 809 372 786Q372 777 343 764ZM518 588Q449 499 343 426V296H379Q553 377 629.0 443.5Q705 510 756 655H568Q554 633 533 607Q647 590 647 524Q647 493 628.5 474.0Q610 455 585.0 455.0Q560 455 547.5 469.5Q535 484 538 507Q539 517 539 525Q539 560 518 588ZM687 404Q595 342 404 296H688Q688 379 687 404ZM40 671Q51 671 95.0 647.5Q139 624 168.0 588.5Q197 553 197.0 512.5Q197 472 176.5 448.5Q156 425 129.0 425.0Q102 425 86.0 441.5Q70 458 70 481Q70 491 77.0 511.0Q84 531 84 562Q84 624 44 659Q37 665 37.0 668.0Q37 671 40 671Z" transform="translate(252.34249471458773 731.0972515856237) scale(0.49471458773784355 -0.49471458773784355)" fill="#342c23"/><path d="M1471 0H1149L1021 333H435L314 0H0L571 1466H884ZM926 580 724 1124 526 580Z" transform="translate(735.0 203.84704282800817) scale(0.061182868796736914 -0.061182868796736914)" fill="#fff0c9"/><path d="M140 0V1466H436V0Z" transform="translate(835.3547066848569 209.0) scale(0.06821282401091405 -0.06821282401091405)" fill="#fff0c9"/>
+</svg>

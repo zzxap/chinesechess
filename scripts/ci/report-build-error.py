@@ -22,6 +22,8 @@ for index, line in enumerate(lines):
                 messages.append(detail.strip())
 causes = [line.strip() for line in lines if 'Caused by:' in line]
 messages.extend(causes[-4:])
+dart_diagnostics = [line.strip() for line in lines if re.search(r'\.dart:\d+:\d+', line)]
+messages.extend(sorted(dart_diagnostics, key=lambda line: 0 if re.search(r'\berror\b', line, re.I) else 1))
 for index, line in enumerate(lines):
     if 'Undefined symbols for architecture' in line:
         messages.extend(detail.strip() for detail in lines[index:index + 20] if detail.strip())

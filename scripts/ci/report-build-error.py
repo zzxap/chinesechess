@@ -26,7 +26,7 @@ for index, line in enumerate(lines):
     if 'Undefined symbols for architecture' in line:
         messages.extend(detail.strip() for detail in lines[index:index + 20] if detail.strip())
 if not messages:
-    messages = [line.strip() for line in lines if re.search(r'\berror\b|CMake Error|FAILURE:', line, re.I)][-8:]
+    messages = [line.strip() for line in lines if re.search(r'\berror\b|CMake Error|FAILURE:|version solving failed|requires SDK version|Because |failed to|could not', line, re.I)][-8:]
 messages = list(dict.fromkeys(messages))[:20]
 text = '\n'.join(messages)[:8000] or 'Build failed; inspect the build step log for details.'
 annotation = text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')

@@ -34,16 +34,29 @@ jobs:
       - name: Resolve Flutter packages
         working-directory: flutter
         run: |
-          flutter config --no-analytics
+          set -o pipefail
+          mkdir -p assets/ai
           cp ../Pikafish/pikafish.nnue assets/ai/model.nnue
-          flutter pub get
+          flutter config --no-analytics
+          if flutter pub get 2>&1 | tee "$RUNNER_TEMP/flutter-pub-get.log"; then
+            exit 0
+          else
+            python3 ../scripts/ci/report-build-error.py "$RUNNER_TEMP/flutter-pub-get.log"
+            exit 1
+          fi
       - name: Generate FFI bindings from C header
         id: ffigen
         working-directory: flutter
         run: |
+          set -o pipefail
           cp ffigen.yaml ffigen_ci.yaml
           printf '\nllvm-path:\n  - /usr/lib/llvm-18\n' >> ffigen_ci.yaml
-          dart run ffigen --config ffigen_ci.yaml
+          if dart run ffigen --config ffigen_ci.yaml 2>&1 | tee "$RUNNER_TEMP/flutter-ffigen.log"; then
+            true
+          else
+            python3 ../scripts/ci/report-build-error.py "$RUNNER_TEMP/flutter-ffigen.log"
+            exit 1
+          fi
           dart format lib
       - name: Analyze Dart without running tests
         working-directory: flutter

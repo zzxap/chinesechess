@@ -21,7 +21,9 @@ found = set()
 for library in libraries:
     binary = framework / library['LibraryIdentifier'] / library['LibraryPath']
     for arch in library['SupportedArchitectures']:
-        subprocess.run(['xcrun', 'lipo', '-verify_arch', arch, str(binary)], check=True)
+        # -verify_arch consumes all following arguments as architecture names.
+        # Put the input archive before the command, as required by Apple lipo.
+        subprocess.run(['xcrun', 'lipo', str(binary), '-verify_arch', arch], check=True)
         symbols = subprocess.run(['xcrun', 'nm', '-arch', arch, '-gU', str(binary)],
                                  check=True, capture_output=True, text=True).stdout
         defined = {line.split()[-1] for line in symbols.splitlines() if line.split()}
